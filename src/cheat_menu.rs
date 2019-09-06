@@ -1,6 +1,7 @@
 use arrayvec::ArrayVec;
 use core::fmt::Write;
 use libtp::link::{Inventory, Link};
+use libtp::items::{Clawshot, Clawshot_BG};
 use libtp::system::LINK_ROLL_CONSTANTS;
 
 use utils::*;
@@ -10,7 +11,8 @@ static mut cursor: usize = 0;
 static mut scroll_offset: usize = 0;
 static mut already_pressed_a: bool = false;
 
-pub const CHEAT_AMNT: usize = 11;
+//pub const CHEAT_AMNT: usize = 11;
+pub const CHEAT_AMNT: usize = 12;
 
 pub fn transition_into() {
     unsafe {
@@ -31,6 +33,7 @@ enum CheatId {
     TeleportEnabled,
     ReloadArea,
     FastRolling,
+    SuperClawshot,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -58,11 +61,24 @@ pub fn apply_cheats() {
     for cheat in unsafe { &ITEMS } {
         if cheat.active {
             match cheat.id {
+                // mem start 0x7C000000
                 Invincible => {
                     link.heart_quarters = (link.heart_pieces / 5) * 4;
                 }
                 InvincibleEnemies => {
                     libtp::system::memory::write::<u32>(0x8008_7F28, 0x4BF7_D158);
+                }
+                SuperClawshot => {
+                   let mut speed = Clawshot::get_speed();
+                   let mut pull_rate = Clawshot::get_pull_rate();
+                   let mut extension_rate = Clawshot::get_extension_rate();
+                   let mut retraction_rate = Clawshot::get_retraction_rate();
+                   let mut is_target = Clawshot_BG::get_background();
+                   *speed = 2870.0;
+                   *pull_rate = 500.0;
+                   *extension_rate = 69120.0;
+                   *retraction_rate = 2870.0;
+                   *is_target = 0x3C600004; // figure this out
                 }
                 InfiniteAir => {
                     let mut air = Link::get_air();
@@ -106,6 +122,18 @@ pub fn apply_cheats() {
                 MoonJumpEnabled => unsafe {
                     commands::COMMANDS[commands::MOON_JUMP].active = false;
                 },
+                SuperClawshot => {
+                    let mut speed = Clawshot::get_speed();
+                    let mut pull_rate = Clawshot::get_pull_rate();
+                    let mut extension_rate = Clawshot::get_extension_rate();
+                    let mut retraction_rate = Clawshot::get_retraction_rate();
+                    let mut is_target = Clawshot_BG::get_background();
+                    *speed = 100.0;
+                    *pull_rate = 60.0;
+                    *extension_rate = 2000.0;
+                    *retraction_rate = 150.0;
+                    *is_target = 0x4182002C; // figure this out
+                }
                 TeleportEnabled => {
                     unsafe {
                         commands::COMMANDS[commands::LOAD_POSITION].active = false;
@@ -127,6 +155,7 @@ pub fn apply_cheats() {
 }
 
 static mut ITEMS: [Cheat; CHEAT_AMNT] = [
+    Cheat::new(SuperClawshot, "Super Clawshot", true),
     Cheat::new(Invincible, "Invincible", true),
     Cheat::new(InvincibleEnemies, "Invincible Enemies", true),
     Cheat::new(InfiniteAir, "Infinite Air", true),
