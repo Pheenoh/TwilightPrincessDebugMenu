@@ -1,9 +1,10 @@
+use arrayvec::ArrayString;
 use core::fmt::Write;
 use libtp::system::boss_flags_value;
 use libtp::link::Inventory;
-
 use utils::*;
 use {controller, get_state, visible, warping};
+use print;
 
 static mut cursor: usize = 0;
 
@@ -92,12 +93,36 @@ pub fn render() {
         }
     }
 
-    for (index, (line, &content)) in lines.iter_mut().zip(&contents).enumerate() {
-        let _ = match index {
-            ALTER_BOSS_FLAGS_INDEX => write!(line.begin(), "{}: {}", content, boss_flags),
-            ALTER_RUPEE_TEXT_INDEX => write!(line.begin(), "{}: {:02X}", content, inventory.rupee_cs_flags),
-            _ => write!(line.begin(), "{}", content),
-        };
-        line.selected = index == unsafe { cursor };
+    for (index, (line, &content)) in lines
+        .iter_mut()
+        .zip(&contents)
+        .enumerate() {
+            let _ = match index {
+                ALTER_BOSS_FLAGS_INDEX => write!(line.begin(), "{}: {}", content, boss_flags),
+                ALTER_RUPEE_TEXT_INDEX => write!(line.begin(), "{}: {:02X}", content, inventory.rupee_cs_flags),
+                _ => write!(line.begin(), "{}", content),
+            };
+            line.selected = index == unsafe { cursor };
+        }
     }
+
+pub fn render_descriptions() {
+        let mut descriptions = [
+            "Modify Link's item wheel and pause menu items",
+            "Apply some cheats!",
+            "Warp to a location",
+            "Manage memory address watches",
+            "Save/load your settings",
+            "",
+            ""
+        ];
+        let mut s = ArrayString::<[u8; 64]>::new();
+
+        unsafe {
+            // prevent oob index
+            if cursor < descriptions.len() {
+                let _ = write!(s, "{}", descriptions[cursor]);
+                print::printf(s.as_str(), 20.0, 425.0, 0x77_88_99_FF);
+            }
+        }
 }
