@@ -104,11 +104,11 @@ pub extern "C" fn game_loop() {
     if unsafe { visible } {
         utils::render();
     } else if d_down && rt_down && lt_down && unsafe { !popups::visible } {
-        unsafe {
+        unsafe {    
             visible = true;
         }
     } else {
-        // popups::check_global_flags();
+       
     }
 }
 
@@ -117,6 +117,8 @@ pub unsafe extern "C" fn draw() {
     print::setup_draw();
     if visible {
         get_state().menu.draw();
+        if utils.
+        main_menu::render_descriptions();
     }
     memory::render_watches();
     popups::draw_popup();

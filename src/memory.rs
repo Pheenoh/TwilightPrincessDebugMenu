@@ -569,11 +569,14 @@ pub fn render() {
             }
         }
     }
+    // Writes static line to top of menu
     let lines = menu.lines_mut();
     let _ = write!(
         lines[0].begin(),
         "Address  X    Y    Hex   Type  Offset  Show"
     );
+
+    // Writes lines for each each address
     for (index, (line, content)) in lines
         .into_iter()
         .skip(1)
