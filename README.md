@@ -24,7 +24,7 @@ You will need rust to compile the libraries and iso, you can download it from
 
 Set the compiler to work on the nightly build with
 ```
-rustup override set nightly
+rustup override set nightly-2019-07-08
 ```
 
 Add the `powerpc-unknown-linux-gnu` toolchain with
