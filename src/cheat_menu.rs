@@ -2,7 +2,10 @@ use arrayvec::ArrayVec;
 use core::fmt::Write;
 use libtp::link::{Inventory, Link};
 use libtp::items::{Clawshot, Clawshot_BG};
+use libtp::ui::{Draw, Actor_Command};
+use libtp::misc::{Query042};
 use libtp::system::LINK_ROLL_CONSTANTS;
+//use gcn::card::{Card, CardError};
 
 use utils::*;
 use {commands, controller};
@@ -11,8 +14,7 @@ static mut cursor: usize = 0;
 static mut scroll_offset: usize = 0;
 static mut already_pressed_a: bool = false;
 
-//pub const CHEAT_AMNT: usize = 11;
-pub const CHEAT_AMNT: usize = 12;
+pub const CHEAT_AMNT: usize = 15;
 
 pub fn transition_into() {
     unsafe {
@@ -34,6 +36,10 @@ enum CheatId {
     ReloadArea,
     FastRolling,
     SuperClawshot,
+    DisableHUD,
+    FreezeActors,
+    TransformAnywhere,
+    //CardTest,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -65,8 +71,30 @@ pub fn apply_cheats() {
                 Invincible => {
                     link.heart_quarters = (link.heart_pieces / 5) * 4;
                 }
+                // CardTest => {
+                //     let mut card = Card::open("gz2e01");
+                //     Ok(mut card) => {
+                //         let result = card.deserialize_read();
+                //     }
+                // }
                 InvincibleEnemies => {
                     libtp::system::memory::write::<u32>(0x8008_7F28, 0x4BF7_D158);
+                }
+                FreezeActors => {
+                    let mut freeze_actors = Actor_Command::check_frozen();
+                    *freeze_actors = true;
+                }
+                DisableHUD => {
+                    let mut hudvals = Draw::get_hud();
+                    *hudvals = 0xFFFF;
+                }
+                TransformAnywhere => {
+                    let mut msg1 = Query042::get_mesg1();
+                    let mut msg2 = Query042::get_mesg2();
+                    let mut msg3 = Query042::get_mesg3();
+                    *msg1 = 0x4800000C;
+                    *msg2 = 0x4800000C;
+                    *msg3 = 0x4800000C;
                 }
                 SuperClawshot => {
                    let mut speed = Clawshot::get_speed();
@@ -134,6 +162,22 @@ pub fn apply_cheats() {
                     *retraction_rate = 150.0;
                     *is_target = 0x4182002C; // figure this out
                 }
+                FreezeActors => {
+                    let mut freeze_actors = Actor_Command::check_frozen();
+                    *freeze_actors = false;
+                }
+                DisableHUD => {
+                    let mut hudvals = Draw::get_hud();
+                    *hudvals = 0x3F80;
+                }
+                TransformAnywhere => {
+                    let mut msg1 = Query042::get_mesg1();
+                    let mut msg2 = Query042::get_mesg2();
+                    let mut msg3 = Query042::get_mesg3();
+                    *msg1 = 0x4182000C;
+                    *msg2 = 0x4182000C;
+                    *msg3 = 0x4182000C;
+                }
                 TeleportEnabled => {
                     unsafe {
                         commands::COMMANDS[commands::LOAD_POSITION].active = false;
@@ -155,6 +199,9 @@ pub fn apply_cheats() {
 }
 
 static mut ITEMS: [Cheat; CHEAT_AMNT] = [
+    //Cheat::new(CardTest, "Card Test", true),
+    Cheat::new(FreezeActors, "Freeze Actors", true),
+    Cheat::new(TransformAnywhere, "Transform Anywhere", true),
     Cheat::new(SuperClawshot, "Super Clawshot", true),
     Cheat::new(Invincible, "Invincible", true),
     Cheat::new(InvincibleEnemies, "Invincible Enemies", true),
@@ -167,6 +214,7 @@ static mut ITEMS: [Cheat; CHEAT_AMNT] = [
     Cheat::new(TeleportEnabled, "Teleport Enabled", true),
     Cheat::new(ReloadArea, "Reload Area", true),
     Cheat::new(FastRolling, "Fast Rolling", true),
+    Cheat::new(DisableHUD, "Disable HUD", true),
 ];
 
 use self::CheatId::*;

@@ -117,7 +117,6 @@ pub unsafe extern "C" fn draw() {
     print::setup_draw();
     if visible {
         get_state().menu.draw();
-        if utils.
         main_menu::render_descriptions();
     }
     memory::render_watches();
